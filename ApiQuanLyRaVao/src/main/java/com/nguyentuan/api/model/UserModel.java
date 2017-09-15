@@ -17,11 +17,20 @@ public class UserModel extends status implements  Serializable {
 	private String Password;
 	private String Name;	
 	private String FullName;
+	private DepertmentModel Depertment;
 	private Timestamp Create;
 	private boolean IsLock;
 	private boolean Actived;
 
 	
+
+	public DepertmentModel getDepertment() {
+		return Depertment;
+	}
+
+	public void setDepertment(DepertmentModel depertment) {
+		Depertment = depertment;
+	}
 
 	public Timestamp getCreate() {
 		return Create;

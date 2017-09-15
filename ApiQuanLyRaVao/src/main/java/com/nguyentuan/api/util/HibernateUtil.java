@@ -1,4 +1,4 @@
-package com.nguyentuan.apiutil;
+package com.nguyentuan.api.util;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;

@@ -14,18 +14,21 @@ import org.springframework.stereotype.Repository;
 import org.springframework.validation.BindingResult;
 
 import com.nguyentuan.api.common.FLConstant;
+import com.nguyentuan.api.dto.GetUserDto;
+import com.nguyentuan.api.dto.GetUserDxoDto;
 import com.nguyentuan.api.dto.GetUserNameRequestDto;
 import com.nguyentuan.api.entity.DepartmentEntity;
 import com.nguyentuan.api.entity.UserEntity;
 import com.nguyentuan.api.logic.UserLogic;
+import com.nguyentuan.api.model.DepertmentModel;
 import com.nguyentuan.api.model.UserModel;
-import com.nguyentuan.apiutil.FLBeanUtil;
-import com.nguyentuan.apiutil.HibernateUtil;
+import com.nguyentuan.api.util.FLBeanUtil;
+import com.nguyentuan.api.util.HibernateUtil;
 
 @Repository
 public class UserLogicImpl implements UserLogic {
 
-	public UserModel checkUser(GetUserNameRequestDto userlogindto) {
+	public UserEntity checkUser(GetUserNameRequestDto userlogindto) {
 
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		Transaction transaction = null;
@@ -35,32 +38,15 @@ public class UserLogicImpl implements UserLogic {
 			sql.append("SELECT * ").append(" FROM user").append(" Where UserName = :username ")
 					.append(" AND Password = :password  ").append("AND IsLock = 0 ");
 
-			SQLQuery query = session.createSQLQuery(sql.toString()).addEntity(UserEntity.class);			
+			SQLQuery query = session.createSQLQuery(sql.toString()).addEntity(UserEntity.class);
 			query.setParameter("username", userlogindto.getUserName());
 			query.setParameter("password", userlogindto.getPassWord());
 			UserEntity employees = (UserEntity) query.uniqueResult();
 
-			System.out.println(employees.getCreated());
-
-			UserModel billingModel = new UserModel();
-			if (employees != null) {
-
-				try {
-					FLBeanUtil.copyProperties(employees, billingModel);
-					System.out.println(billingModel.getCreate());
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			} else {
-
-				billingModel.setName(FLConstant.status.SYSTEM_ERROR);
-			}
-
+			System.out.println(employees.getDepartmentID().getName() + "aaaaaaaaaa");
 			transaction.commit();
 
-			return billingModel;
+			return employees;
 		} catch (RuntimeException var4) {
 
 			throw var4;
@@ -102,9 +88,13 @@ public class UserLogicImpl implements UserLogic {
 
 			}
 
+			
+			
+			
 			return billingModel;
 		} catch (RuntimeException var4) {
 			throw var4;
+		
 		} finally {
 			session.flush();
 			session.close();
@@ -112,40 +102,50 @@ public class UserLogicImpl implements UserLogic {
 
 	}
 
-	public List<UserModel> checkUser3(String username, String pass) {
+	public List<UserModel> getAllUser(GetUserNameRequestDto userlogindto) {
 
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		Transaction transaction = null;
 		try {
 			transaction = session.beginTransaction();
 			String sql = "SELECT *FROM user INNER JOIN department ON user.DepartmentID = department.ID where user.UserName='"
-					+ username + "' AND Password='" + pass + "' ";
+					+ userlogindto.getUserName() + "' AND Password='" + userlogindto.getPassWord() + "' ";
 			SQLQuery query = session.createSQLQuery(sql).addEntity(UserEntity.class).addEntity(DepartmentEntity.class);
 
 			List<Object[]> objs = (List<Object[]>) query.list();
 			UserEntity userEntity = new UserEntity();
+			UserModel userModel = new UserModel();
+			DepertmentModel depertmentModel = new DepertmentModel();
 			DepartmentEntity departmentEntity = new DepartmentEntity();
-			List<UserEntity> list2 = new ArrayList<UserEntity>();
-			List<UserModel> list = new ArrayList<UserModel>();
 
-			UserModel model22 = new UserModel();
-			for (Object[] row : objs) {
-				userEntity = (UserEntity) row[0];
-				departmentEntity = (DepartmentEntity) row[1];
-				list2.add(userEntity);
+			List<UserModel> listUserModel = new ArrayList<UserModel>();
+
+			
+				for (Object[] row : objs) {
+					userEntity = (UserEntity) row[0];
+					departmentEntity = (DepartmentEntity) row[1];
+
+					try {
+						FLBeanUtil.copyPropertiesNative(userEntity, userModel);
+						FLBeanUtil.copyPropertiesNative(departmentEntity, depertmentModel);
+						userModel.setDepertment(depertmentModel);
+
+						listUserModel.add(userModel);
+
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				
+				
 			}
-
-			BeanUtils.copyProperties(list2, list);
-
-			for (UserEntity model : list2) {
-				BeanUtils.copyProperties(userEntity, model22);
-				list.add(model22);
-
-			}
+			
+			
 
 			transaction.commit();
 
-			return list;
+			return listUserModel;
 		} catch (RuntimeException var4) {
 			throw var4;
 		} finally {
@@ -154,11 +154,61 @@ public class UserLogicImpl implements UserLogic {
 		}
 
 	}
-
 	public static void main(String args[]) {
-
 		UserLogicImpl impl = new UserLogicImpl();
-		System.out.println(impl.checkUser3("4424", "abc"));
+		GetUserNameRequestDto userlogindto = new GetUserNameRequestDto();
+		userlogindto.setPassWord("abc");
+		userlogindto.setUserName("4424");
+		
+		List<UserModel> list = new ArrayList<>();
+		list=impl.getAllUser(userlogindto);
+		for( UserModel model  :list ){
+			System.out.println(model.getFullName()+"aaaaaaaaaaaaaa");
+			
+		}
+
+	}
+	
+
+	@Override
+	public boolean changePassword(GetUserDxoDto getUserDto) {
+		boolean kq = false;
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		Transaction transaction = null;
+		try {
+			transaction = session.beginTransaction();
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT * ").append(" FROM user").append(" Where UserName = :username ")
+					.append(" AND Password = :password  ").append("AND IsLock = 0 ");
+
+			SQLQuery query = session.createSQLQuery(sql.toString()).addEntity(UserEntity.class);
+			query.setParameter("username", getUserDto.getUserName());
+			query.setParameter("password", getUserDto.getPassword());
+			UserEntity employees = (UserEntity) query.uniqueResult();
+
+			if (employees != null) {
+				StringBuffer stringBuffer = new StringBuffer();
+				stringBuffer.append(" UPDATE user SET ").append(" Password =[ :password ] ").append(" Where ID = : id ")
+						.append(" AND  UserName = :username ");
+
+				SQLQuery updateChangPassword = session.createSQLQuery(sql.toString());
+				updateChangPassword.setParameter("password", getUserDto.getNew_Password());
+				updateChangPassword.setParameter("id", getUserDto.getID());
+				updateChangPassword.setParameter("username", getUserDto.getUserName());
+				updateChangPassword.executeUpdate();
+				kq = true;
+			}
+
+			transaction.commit();
+
+			return kq;
+		} catch (RuntimeException var4) {
+
+			throw var4;
+		} finally {
+			session.flush();
+			session.close();
+		}
 
 	}
 

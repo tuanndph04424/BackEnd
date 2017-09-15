@@ -1,5 +1,5 @@
 
-package com.nguyentuan.apiutil;
+package com.nguyentuan.api.util;
 
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;

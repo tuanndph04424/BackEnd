@@ -1,4 +1,4 @@
-package com.nguyentuan.apiutil;
+package com.nguyentuan.api.util;
 
 import java.math.BigDecimal;
 import java.util.Date;

@@ -1,17 +1,19 @@
 package com.nguyentuan.api.dto;
 
-import com.nguyentuan.api.beans.ParamName;
+
 import com.nguyentuan.api.validation.LengthMax;
 import com.nguyentuan.api.validation.RequiredNotBlank;
 
 public class GetUserNameRequestDto {
+	private int ID;
+	
 	@RequiredNotBlank
 	@LengthMax(max = 15)
-	@ParamName("userNamedd")
+
 	private String UserName;
 	@RequiredNotBlank
 	@LengthMax(max = 15)
-	@ParamName("passworddd")
+
 	private String PassWord;
 	public String getUserName() {
 		return UserName;
@@ -24,6 +26,12 @@ public class GetUserNameRequestDto {
 	}
 	public void setPassWord(String passWord) {
 		PassWord = passWord;
+	}
+	public int getID() {
+		return ID;
+	}
+	public void setID(int iD) {
+		ID = iD;
 	}
 
 	
